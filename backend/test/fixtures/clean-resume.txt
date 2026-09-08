@@ -1,0 +1,34 @@
+John Smith
+john.smith@email.com | +1 (555) 123-4567
+linkedin.com/in/johnsmith | github.com/johnsmith
+
+Professional Summary
+Experienced software engineer with 8+ years of expertise in building scalable web applications. Passionate about clean architecture, performance optimization, and mentoring junior developers.
+
+Experience
+
+Senior Software Engineer at TechCorp Inc   Jan 2020 – Present
+- Architected a microservices migration that reduced deployment time by 60% and improved system uptime to 99.95%
+- Led a team of 8 engineers to deliver a customer-facing React dashboard serving 50K+ daily active users
+- Optimized database queries resulting in 40% latency reduction across API endpoints
+- Implemented CI/CD pipelines using GitHub Actions and Docker, cutting release cycles from 2 weeks to 2 days
+- Mentored 4 junior developers through code reviews and pair programming sessions
+
+Software Engineer at StartupXYZ   Jun 2016 – Dec 2019
+- Developed RESTful APIs using Node.js and Express, handling 10K requests per second at peak
+- Built real-time notification system with WebSockets serving 25K concurrent connections
+- Reduced cloud infrastructure costs by 35% through containerization with Docker and Kubernetes
+- Implemented automated testing suite achieving 92% code coverage across 3 microservices
+- Collaborated with product team to ship 12 features in 6-month sprint cycle
+
+Junior Developer at WebAgency   Aug 2014 – May 2016
+- Built responsive web applications using React, HTML5, and CSS3
+- Developed internal tools that automated 15 hours of manual work per week
+- Created REST APIs with Python/Django serving 5 client applications
+
+Education
+Bachelor of Science in Computer Science
+State University, 2014
+
+Skills
+JavaScript, TypeScript, Python, React, Node.js, Express, NestJS, PostgreSQL, MongoDB, Redis, Docker, Kubernetes, AWS, Git, CI/CD, GraphQL, REST, Agile, TDD

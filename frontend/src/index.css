@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens per design-and-wireframe.md:
+ * Canvas (#EEF1F3), Paper (#FFFFFF), Ink (#16213D),
+ * Pine (#2C6B4F), Rust (#C1573B), Amber (#E7A93B)
+ */
+
+@theme {
+  --color-canvas: #EEF1F3;
+  --color-paper: #FFFFFF;
+  --color-ink: #16213D;
+  --color-ink-muted: #4A5568;
+  --color-ink-faint: #8A94A6;
+  --color-pine: #2C6B4F;
+  --color-pine-light: #E8F5EE;
+  --color-rust: #C1573B;
+  --color-rust-light: #FCEAE5;
+  --color-amber: #E7A93B;
+  --color-amber-light: #FFF8E7;
+  --color-border: #D8DDE3;
+  --color-border-light: #EEF1F3;
+
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ─── Base ────────────────────────────────────────────────── */
+
+body {
+  font-family: var(--font-serif);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Scan-line animation (the single motion moment) ──────── */
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.scan-line-sweep {
+  animation: scan-line 2.4s ease-in-out infinite;
+}
+
+/* ─── Checklist step entrance ─────────────────────────────── */
+
+@keyframes step-resolve {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.step-enter {
+  animation: step-resolve 0.3s ease-out forwards;
+}
+
+/* ─── Score reveal ────────────────────────────────────────── */
+
+@keyframes score-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.score-reveal {
+  animation: score-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ─── Drag-and-drop zone ──────────────────────────────────── */
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: var(--color-pine);
+    opacity: 0.6;
+  }
+  50% {
+    border-color: var(--color-pine);
+    opacity: 1;
+  }
+}
+
+.drop-zone-active {
+  animation: pulse-border 1.2s ease-in-out infinite;
+  background: var(--color-pine-light) !important;
+}
+
+/* ─── Hairline dividers (not cards) per design spec ───────── */
+
+.hairline-divider {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hairline-divider:last-child {
+  border-bottom: none;
+}

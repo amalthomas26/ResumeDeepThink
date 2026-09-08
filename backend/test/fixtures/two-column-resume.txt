@@ -1,0 +1,26 @@
+Jane Doe                                              Contact
+jane@email.com                                        +91 9876543210
+                                                      linkedin.com/in/janedoe
+
+About Me                                              Skills
+Creative professional                                 HTML     CSS
+with a passion for                                    JavaScript
+building great UX.                                    React    Vue
+                                                      Node.js  Express
+Work History                                          Python   Django
+                                                      SQL      MongoDB
+Product Designer            Jul 2021 – Present        Git      Docker
+Acme Corp
+- Designed user interfaces                            Education
+  for mobile apps
+- Worked with developers                              B.Tech CS
+  on implementation                                   XYZ University
+- Created wireframes                                  2018 – 2022
+  and prototypes
+
+UI Developer                Jan 2019 – Jun 2021       Certifications
+DesignStudio
+- Built responsive                                    AWS Certified
+  web pages                                           Google UX Design
+- Maintained design
+  system components

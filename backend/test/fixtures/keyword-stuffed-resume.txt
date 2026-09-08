@@ -1,0 +1,29 @@
+Mike Johnson
+mike.johnson@email.com | +1 555-999-8888
+
+Skills
+JavaScript, JavaScript, JavaScript, TypeScript, TypeScript, TypeScript, React, React, React, React, React, Node.js, Node.js, Node.js, Node.js, Express, Express, Express, Express, Express, Python, Python, Python, Python, Python, Python, Django, Django, Django, Flask, Flask, Flask, AWS, AWS, AWS, AWS, AWS, Docker, Docker, Docker, Docker, Kubernetes, Kubernetes, Kubernetes, Kubernetes, MongoDB, MongoDB, MongoDB, PostgreSQL, PostgreSQL, PostgreSQL, Redis, Redis, Redis, GraphQL, GraphQL, GraphQL, REST, REST, REST, Git, Git, Git, CI/CD, CI/CD, CI/CD, Agile, Agile, Agile, TDD, TDD, TDD, HTML, CSS, SASS, Vue, Angular, Svelte, Next.js, Nuxt, Webpack, Babel, ESLint, Prettier, Jest, Mocha, Cypress, Selenium, Jenkins, Travis, CircleCI, Terraform, Ansible, Chef, Puppet, Linux, Ubuntu, CentOS, Nginx, Apache, RabbitMQ, Kafka, Elasticsearch, Logstash, Kibana, Prometheus, Grafana, Datadog, New Relic, Sentry
+
+Summary
+Experienced JavaScript developer with expertise in JavaScript and React and Node.js. Skilled in JavaScript programming using JavaScript frameworks. Expert JavaScript developer building JavaScript applications with JavaScript and JavaScript technologies. Deep knowledge of JavaScript ecosystem including JavaScript testing with JavaScript tools.
+
+Experience
+
+Software Developer at Company   2020 – Present
+- Responsible for JavaScript development
+- Responsible for React development
+- Responsible for Node.js development
+- Responsible for maintaining code
+- Responsible for fixing bugs
+- Used JavaScript to build things
+- Used React to create components
+
+Developer at Another Company   2018 – 2020
+- Responsible for writing code
+- Responsible for testing
+- Responsible for deployments
+- Did work with JavaScript and React
+- Helped with various tasks
+
+Education
+BS Computer Science, University, 2018

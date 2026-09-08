@@ -1,0 +1,9 @@
+import { ResumeTypeProfile } from './resume-type-profile.interface';
+import { techProfile } from './tech.profile';
+import { financeProfile } from './finance.profile';
+import { supportProfile } from './support.profile';
+import { generalProfile } from './general.profile';
+export declare const RESUME_TYPE_PROFILES: ReadonlyMap<string, ResumeTypeProfile>;
+export declare function getResumeTypeProfile(typeId: string | undefined): ResumeTypeProfile;
+export { techProfile, financeProfile, supportProfile, generalProfile };
+export type { ResumeTypeProfile } from './resume-type-profile.interface';

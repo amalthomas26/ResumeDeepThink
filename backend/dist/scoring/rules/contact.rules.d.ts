@@ -1,0 +1,12 @@
+import { RuleResult } from '../interfaces/rule-result.interface';
+import { ParsedResume } from '../interfaces/parsed-resume.interface';
+declare const EMAIL_REGEX: RegExp;
+declare const PHONE_REGEX: RegExp;
+declare const LINKEDIN_REGEX: RegExp;
+declare const URL_REGEX: RegExp;
+export declare function checkNameDetected(parsedResume: ParsedResume): RuleResult;
+export declare function checkEmailPresent(parsedResume: ParsedResume): RuleResult;
+export declare function checkPhonePresent(parsedResume: ParsedResume): RuleResult;
+export declare function checkLinkedInOrPortfolio(parsedResume: ParsedResume): RuleResult;
+export declare function runContactRules(parsedResume: ParsedResume): RuleResult[];
+export { EMAIL_REGEX, PHONE_REGEX, LINKEDIN_REGEX, URL_REGEX };
