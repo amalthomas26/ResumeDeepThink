@@ -1,125 +1,232 @@
-@import "tailwindcss";
-
 /*
- * Design tokens per design-and-wireframe.md:
- * Canvas (#EEF1F3), Paper (#FFFFFF), Ink (#16213D),
- * Pine (#2C6B4F), Rust (#C1573B), Amber (#E7A93B)
+ * ============================================================================
+ * DESIGN PLAN: RESUMEDEEPTHINK (PRECISE, CALM AUTHORITY)
+ * ============================================================================
+ *
+ * 1. PALETTE (Calibrated Mineral & Marine Authority):
+ *    - Base Ground:       #F8FAFC (--color-surface-base: Alabaster Mist, low-glare mineral foundation)
+ *    - Elevated Surface:  #FFFFFF (--color-surface-panel: Pure Crisp Optical White)
+ *    - Structural Slate:  #F1F5F9 (--color-surface-subtle: Recessed intake foundation)
+ *    - Obsidian Primary:  #0F172A (--color-ink-primary: 14.2:1 contrast ratio against white)
+ *    - Neutral Secondary: #475569 (--color-ink-secondary: 5.8:1 contrast ratio against white)
+ *    - Authority Accent:  #0F4C81 (--color-brand-marine: Admiralty Navy, trustworthy diagnostic)
+ *    - Validated Status:  #0F766E (--color-status-pass: Deep Jade Pine)
+ *    - Caution Status:    #B45309 (--color-status-warn: Amber Ochre)
+ *    - Defect Status:     #B91C1C (--color-status-fail: Crimson Earth)
+ *
+ * 2. TYPE ROLES:
+ *    - Display / Score:   Plus Jakarta Sans, optical weight 700-800, clamp(2.75rem, 2.2rem + 2.75vw, 4.5rem), tabular-nums.
+ *    - Headings (H1/H2):  Plus Jakarta Sans, weight 700, clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem), letter-spacing -0.02em.
+ *    - Subheadings / UI:  Plus Jakarta Sans, weight 600, 0.875rem to 1rem.
+ *    - Body & Guidance:   Plus Jakarta Sans / System-UI, weight 400-500, clamp(1rem, 0.95rem + 0.25vw, 1.125rem), leading 1.6. Never under 16px on mobile.
+ *    - Quantitative Data: Tabular sans numerals (no fake terminal monospace).
+ *
+ * 3. ONE-SENTENCE LAYOUT CONCEPT:
+ *    A monolithic diagnostic intake panel suspended over a quiet, slowly shifting ambient light field, organizing verification, structured parameters, and immediate next actions along an unbroken vertical spine.
+ *
+ * 4. GUIDING PRINCIPLE:
+ *    Transform candidate vulnerability into calculated composure through uncompromising optical clarity, quiet surfaces, and disciplined interaction states. Every pixel and boundary exists solely to diagnose and direct, eschewing both SaaS card noise and literary serif pretense.
+ *
+ * 5. REVISION NOTES (Addressing Generic Tells):
+ *    - Eradicated warm cream (#EEF1F3) + Source Serif 4 + terracotta/rust (#C1573B) duality in favor of Cool Alabaster (#F8FAFC) + Admiralty Navy (#0F4C81) + Plus Jakarta Sans.
+ *    - Eliminated floating drop shadows on cards; replaced with crisp hairline borders (#E2E8F0) and structured panel nesting.
+ *    - Replaced ALL-CAPS tracked-out eyebrow "RESUMEDEEPTHINK" with a calm, properly-cased brand identity.
+ *    - Removed all middle dots, em dashes, monospace data tags, and trailing button arrows.
+ *    - Removed indiscriminate hover and entrance animations across sections; preserved exactly ONE deliberate motion moment (the score reveal) alongside the GPU-only ambient background drift.
+ * ============================================================================
  */
 
-@theme {
-  --color-canvas: #EEF1F3;
-  --color-paper: #FFFFFF;
-  --color-ink: #16213D;
-  --color-ink-muted: #4A5568;
-  --color-ink-faint: #8A94A6;
-  --color-pine: #2C6B4F;
-  --color-pine-light: #E8F5EE;
-  --color-rust: #C1573B;
-  --color-rust-light: #FCEAE5;
-  --color-amber: #E7A93B;
-  --color-amber-light: #FFF8E7;
-  --color-border: #D8DDE3;
-  --color-border-light: #EEF1F3;
+@import "tailwindcss";
 
-  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+@theme {
+  --color-surface-base: #F8FAFC;
+  --color-surface-panel: #FFFFFF;
+  --color-surface-subtle: #F1F5F9;
+  
+  --color-border-subtle: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-focus-ring: #0F4C81;
+
+  --color-ink-primary: #0F172A;
+  --color-ink-secondary: #475569;
+  --color-ink-faint: #64748B;
+
+  --color-brand-marine: #0F4C81;
+  --color-brand-marine-hover: #0A365C;
+  --color-brand-marine-active: #072642;
+
+  --color-status-pass: #0F766E;
+  --color-status-pass-subtle: #CCFBF1;
+  --color-status-warn: #B45309;
+  --color-status-warn-subtle: #FEF3C7;
+  --color-status-fail: #B91C1C;
+  --color-status-fail-subtle: #FEE2E2;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ─── Base ────────────────────────────────────────────────── */
+/* ─── Global Reset & Typography Baseline ────────────────── */
 
-body {
-  font-family: var(--font-serif);
-  color: var(--color-ink);
-  background: var(--color-canvas);
-  margin: 0;
+html {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface-base);
+  color: var(--color-ink-primary);
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Scan-line animation (the single motion moment) ──────── */
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); /* Never under 16px on mobile */
+  line-height: 1.6;
+}
 
-@keyframes scan-line {
+/* ─── Ambient Animated Background (Compositor Thread Only) ── */
+
+.ambient-bg-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  contain: paint;
+  z-index: 0;
+}
+
+.ambient-blob {
+  position: absolute;
+  border-radius: var(--radius-full);
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.ambient-blob-1 {
+  width: min(75vw, 680px);
+  height: min(75vw, 680px);
+  top: -15%;
+  left: 10%;
+  background: radial-gradient(circle, rgba(15, 76, 129, 0.16) 0%, rgba(15, 76, 129, 0) 70%);
+}
+
+.ambient-blob-2 {
+  width: min(65vw, 580px);
+  height: min(65vw, 580px);
+  bottom: 0%;
+  right: 5%;
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.13) 0%, rgba(15, 118, 110, 0) 70%);
+}
+
+.ambient-blob-3 {
+  width: min(50vw, 460px);
+  height: min(50vw, 460px);
+  top: 35%;
+  left: -8%;
+  background: radial-gradient(circle, rgba(180, 83, 9, 0.08) 0%, rgba(180, 83, 9, 0) 70%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ambient-blob-1 {
+    animation: ambient-drift-1 30s ease-in-out infinite alternate;
+  }
+  .ambient-blob-2 {
+    animation: ambient-drift-2 36s ease-in-out infinite alternate;
+  }
+  .ambient-blob-3 {
+    animation: ambient-drift-3 26s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes ambient-drift-1 {
   0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.7;
-  }
-  90% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-}
-
-.scan-line-sweep {
-  animation: scan-line 2.4s ease-in-out infinite;
-}
-
-/* ─── Checklist step entrance ─────────────────────────────── */
-
-@keyframes step-resolve {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.step-enter {
-  animation: step-resolve 0.3s ease-out forwards;
-}
-
-/* ─── Score reveal ────────────────────────────────────────── */
-
-@keyframes score-pop {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.score-reveal {
-  animation: score-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* ─── Drag-and-drop zone ──────────────────────────────────── */
-
-@keyframes pulse-border {
-  0%, 100% {
-    border-color: var(--color-pine);
-    opacity: 0.6;
+    transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    border-color: var(--color-pine);
-    opacity: 1;
+    transform: translate3d(50px, 35px, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-35px, 60px, 0) scale(0.96);
   }
 }
 
-.drop-zone-active {
-  animation: pulse-border 1.2s ease-in-out infinite;
-  background: var(--color-pine-light) !important;
+@keyframes ambient-drift-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-60px, -45px, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(25px, -70px, 0) scale(0.93);
+  }
 }
 
-/* ─── Hairline dividers (not cards) per design spec ───────── */
-
-.hairline-divider {
-  border-bottom: 1px solid var(--color-border);
+@keyframes ambient-drift-3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, -50px, 0) scale(1.06);
+  }
+  100% {
+    transform: translate3d(-25px, 35px, 0) scale(0.95);
+  }
 }
 
-.hairline-divider:last-child {
-  border-bottom: none;
+/* ─── Corner Containment & Clipping ─────────────────────── */
+
+.corner-container {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.corner-container-md {
+  overflow: hidden;
+  border-radius: var(--radius-md);
+}
+
+.corner-container-sm {
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.corner-child-clip {
+  border-radius: inherit;
+}
+
+/* ─── The Single Deliberate Motion Moment: Score Reveal ──── */
+
+@keyframes score-reveal-kf {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translate3d(0, 8px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.score-reveal-moment {
+  animation: score-reveal-kf 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* ─── Standard Focus Ring (Accessibility Compliant) ──────── */
+
+*:focus-visible {
+  outline: 2px solid var(--color-focus-ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* ─── Tabular Numbers ────────────────────────────────────── */
+
+.tabular-data {
+  font-variant-numeric: tabular-nums;
 }

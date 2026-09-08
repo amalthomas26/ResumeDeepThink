@@ -5,10 +5,56 @@ exports.checkActionVerbsUsed = checkActionVerbsUsed;
 exports.checkQuantifiedImpact = checkQuantifiedImpact;
 exports.runExperienceRules = runExperienceRules;
 const CATEGORY = 'Experience Quality Signals';
-function checkDatesPresentConsistent(parsedResume) {
+const BULLET_REGEX = /^[\s]*(?:[-•●○■►▸▹→⊳⊲]|\*|–|—|\d+[.)]\s)/;
+function extractEvaluationBullets(parsedResume, isFresher) {
+    const expBullets = parsedResume.experienceEntries.flatMap((e) => e.bullets);
+    const projBullets = [];
+    const projectSections = parsedResume.sections.filter((s) => s.type === 'projects');
+    for (const section of projectSections) {
+        const lines = section.content.split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (BULLET_REGEX.test(trimmed)) {
+                const cleaned = trimmed.replace(BULLET_REGEX, '').trim();
+                if (cleaned.length > 0)
+                    projBullets.push(cleaned);
+            }
+            else if (trimmed.length > 30 && /^[A-Z]/.test(trimmed)) {
+                projBullets.push(trimmed);
+            }
+        }
+    }
+    if (isFresher) {
+        const combined = [...expBullets, ...projBullets];
+        return {
+            bullets: combined,
+            source: expBullets.length > 0 ? 'both' : 'projects',
+        };
+    }
+    if (expBullets.length > 0) {
+        return { bullets: expBullets, source: 'experience' };
+    }
+    return {
+        bullets: projBullets,
+        source: projBullets.length > 0 ? 'projects' : 'experience',
+    };
+}
+function checkDatesPresentConsistent(parsedResume, profile, experienceLevel) {
     const maxPoints = 5;
+    const isFresher = experienceLevel === 'fresher' || profile?.isFresherProfile === true;
     const entries = parsedResume.experienceEntries;
     if (entries.length === 0) {
+        if (isFresher) {
+            return {
+                id: 'dates-present-consistent',
+                category: CATEGORY,
+                passed: true,
+                points: maxPoints,
+                maxPoints,
+                message: 'Fresher evaluation active: Academic timeline and project credentials verified. Full-time corporate tenure is not required.',
+                severity: 'pass',
+            };
+        }
         return {
             id: 'dates-present-consistent',
             category: CATEGORY,
@@ -27,7 +73,8 @@ function checkDatesPresentConsistent(parsedResume) {
         message = 'All experience entries include dates.';
     }
     else if (entriesWithDates === 0) {
-        message = 'No employment dates found in any experience entry. ATS systems use dates to calculate tenure, progression, and employment gaps — add dates for each role (e.g. "Jan 2020 – Present").';
+        message =
+            'No employment dates found in any experience entry. ATS systems use dates to calculate tenure, progression, and employment gaps — add dates for each role (e.g. "Jan 2020 – Present").';
     }
     else {
         message = `${entriesWithDates} of ${entries.length} experience entries include dates. Add dates to all roles for complete ATS parsing.`;
@@ -42,17 +89,21 @@ function checkDatesPresentConsistent(parsedResume) {
         severity: points === maxPoints ? 'pass' : points >= 3 ? 'warning' : 'fail',
     };
 }
-function checkActionVerbsUsed(parsedResume, profile) {
+function checkActionVerbsUsed(parsedResume, profile, experienceLevel) {
     const maxPoints = 5;
-    const allBullets = parsedResume.experienceEntries.flatMap((e) => e.bullets);
+    const isFresher = experienceLevel === 'fresher' || profile.isFresherProfile === true;
+    const { bullets: allBullets, source } = extractEvaluationBullets(parsedResume, isFresher);
     if (allBullets.length === 0) {
+        const scopeLabel = isFresher
+            ? 'projects or experience entries'
+            : 'experience entries';
         return {
             id: 'action-verbs-used',
             category: CATEGORY,
             passed: false,
             points: 0,
             maxPoints,
-            message: 'No bullet points found in experience entries. Use bullet points starting with strong action verbs to describe your accomplishments.',
+            message: `No bullet points found in ${scopeLabel}. Use bullet points starting with strong action verbs (e.g. Built, Developed, Designed) to describe your accomplishments.`,
             severity: 'warning',
         };
     }
@@ -78,13 +129,14 @@ function checkActionVerbsUsed(parsedResume, profile) {
     let points = Math.round(ratio * maxPoints);
     const penalty = Math.floor(responsibleForCount / 2);
     points = Math.max(0, points - penalty);
+    const scope = source === 'projects' ? 'project' : 'experience';
     let message;
     if (points === maxPoints) {
-        message = `Strong use of action verbs: ${actionVerbBullets} of ${allBullets.length} bullets start with action verbs.`;
+        message = `Strong use of action verbs: ${actionVerbBullets} of ${allBullets.length} ${scope} bullets start with action verbs.`;
     }
     else {
         const parts = [];
-        parts.push(`${actionVerbBullets} of ${allBullets.length} bullets start with strong action verbs.`);
+        parts.push(`${actionVerbBullets} of ${allBullets.length} ${scope} bullets start with strong action verbs.`);
         if (responsibleForCount > 0) {
             parts.push(`Found ${responsibleForCount} "Responsible for…" bullets — rewrite these with action verbs (e.g. "Led" instead of "Responsible for leading").`);
         }
@@ -101,17 +153,21 @@ function checkActionVerbsUsed(parsedResume, profile) {
         severity: points === maxPoints ? 'pass' : points >= 3 ? 'warning' : 'fail',
     };
 }
-function checkQuantifiedImpact(parsedResume, profile) {
+function checkQuantifiedImpact(parsedResume, profile, experienceLevel) {
     const maxPoints = 10;
-    const allBullets = parsedResume.experienceEntries.flatMap((e) => e.bullets);
+    const isFresher = experienceLevel === 'fresher' || profile.isFresherProfile === true;
+    const { bullets: allBullets, source } = extractEvaluationBullets(parsedResume, isFresher);
     if (allBullets.length === 0) {
+        const scopeLabel = isFresher
+            ? 'projects or experience entries'
+            : 'experience entries';
         return {
             id: 'quantified-impact',
             category: CATEGORY,
             passed: false,
             points: 0,
             maxPoints,
-            message: 'No bullet points found to assess quantified impact. Add measurable achievements (numbers, percentages, metrics) to your experience entries.',
+            message: `No bullet points found to assess quantified impact in ${scopeLabel}. Add measurable achievements (numbers, percentages, user metrics) to your accomplishments.`,
             severity: 'warning',
         };
     }
@@ -124,15 +180,16 @@ function checkQuantifiedImpact(parsedResume, profile) {
     }
     const ratio = allBullets.length > 0 ? bulletsWithMetrics / allBullets.length : 0;
     const points = Math.round(ratio * maxPoints);
+    const scope = source === 'projects' ? 'project' : 'experience';
     let message;
     if (points >= 8) {
-        message = `Strong quantified impact: ${bulletsWithMetrics} of ${allBullets.length} bullets include measurable results.`;
+        message = `Strong quantified impact: ${bulletsWithMetrics} of ${allBullets.length} ${scope} bullets include measurable results.`;
     }
     else if (bulletsWithMetrics > 0) {
-        message = `${bulletsWithMetrics} of ${allBullets.length} bullets include quantified impact. Add numbers, percentages, or metrics to more bullets — e.g. "Reduced response time by 40%" or "Managed a team of 8".`;
+        message = `${bulletsWithMetrics} of ${allBullets.length} ${scope} bullets include quantified impact. Add concrete numbers, metrics, or performance stats (e.g. "Used by 300+ students", "Reduced latency by 40%").`;
     }
     else {
-        message = `No quantified achievements found. Resumes with measurable impact (%, $, team sizes, metrics) are significantly more effective. Add concrete numbers to your accomplishments.`;
+        message = `No quantified achievements found. Resumes with measurable impact (%, numbers, scale, metrics) are significantly more competitive. Add concrete metrics to your ${scope} accomplishments.`;
     }
     return {
         id: 'quantified-impact',
@@ -144,11 +201,11 @@ function checkQuantifiedImpact(parsedResume, profile) {
         severity: points >= 8 ? 'pass' : points >= 4 ? 'warning' : 'fail',
     };
 }
-function runExperienceRules(parsedResume, profile) {
+function runExperienceRules(parsedResume, profile, experienceLevel) {
     return [
-        checkDatesPresentConsistent(parsedResume),
-        checkActionVerbsUsed(parsedResume, profile),
-        checkQuantifiedImpact(parsedResume, profile),
+        checkDatesPresentConsistent(parsedResume, profile, experienceLevel),
+        checkActionVerbsUsed(parsedResume, profile, experienceLevel),
+        checkQuantifiedImpact(parsedResume, profile, experienceLevel),
     ];
 }
 //# sourceMappingURL=experience.rules.js.map

@@ -7,10 +7,7 @@ interface CategorySectionProps {
 }
 
 /**
- * A single category in the diagnostic report.
- * Hairline dividers, not cards (per design-and-wireframe.md).
- * Shows category name, earned/max points, and expandable rule list.
- * Uses IBM Plex Mono for data, Source Serif 4 for descriptions.
+ * CategorySection — Hairline-divided diagnostic group with expandable rule audit.
  */
 export function CategorySection({ category }: CategorySectionProps) {
   const [expanded, setExpanded] = useState(false);
@@ -19,53 +16,53 @@ export function CategorySection({ category }: CategorySectionProps) {
     : 0;
 
   const passedCount = category.rules.filter((r) => r.passed).length;
-
-  // Color the percentage based on score quality
-  const pctColor = pct >= 80 ? 'text-pine' : pct >= 50 ? 'text-amber' : 'text-rust';
+  const pctColor =
+    pct >= 80
+      ? 'text-status-pass bg-status-pass-subtle'
+      : pct >= 50
+        ? 'text-status-warn bg-status-warn-subtle'
+        : 'text-status-fail bg-status-fail-subtle';
 
   return (
-    <div className="hairline-divider py-4">
-      {/* Category header — clickable to expand/collapse */}
+    <div className="border-b border-border-subtle last:border-b-0 py-4">
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between gap-4 text-left cursor-pointer group"
+        className="w-full flex items-center justify-between gap-4 text-left cursor-pointer group focus-visible:outline-none"
         aria-expanded={expanded}
       >
         <div className="flex-1 min-w-0">
-          {/* Category name */}
-          <h3 className="text-[15px] font-semibold text-ink font-serif leading-snug">
+          <h3 className="text-sm sm:text-base font-bold text-ink-primary group-hover:text-brand-marine transition-colors">
             {category.name}
           </h3>
-          {/* Summary: "3 of 4 rules passed" */}
-          <span className="text-xs text-ink-faint font-serif mt-0.5 block">
+          <p className="text-xs text-ink-faint mt-0.5 tabular-data">
             {passedCount} of {category.rules.length} rules passed
-          </span>
+          </p>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          {/* Score fraction */}
-          <span className="font-mono text-sm font-bold text-ink">
-            {category.earnedPoints}/{category.maxPoints}
+          <span className="tabular-data text-xs font-semibold text-ink-secondary">
+            {category.earnedPoints} / {category.maxPoints} pts
           </span>
 
-          {/* Percentage badge */}
-          <span className={`font-mono text-xs font-bold ${pctColor}`}>
+          <span className={`tabular-data text-xs font-bold px-2 py-0.5 rounded ${pctColor}`}>
             {pct}%
           </span>
 
-          {/* Expand chevron */}
           <span
-            className={`text-ink-faint text-sm transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
+            className={`w-5 h-5 flex items-center justify-center text-ink-faint transition-transform duration-200 ${
+              expanded ? 'rotate-180' : ''
+            }`}
           >
-            ▶
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
           </span>
         </div>
       </button>
 
-      {/* Expanded rule details */}
       {expanded && (
-        <div className="mt-3 space-y-1 pl-1">
+        <div className="mt-3 pt-2 border-t border-border-subtle/50 space-y-1">
           {category.rules.map((rule) => (
             <RuleItem key={rule.id} rule={rule} />
           ))}

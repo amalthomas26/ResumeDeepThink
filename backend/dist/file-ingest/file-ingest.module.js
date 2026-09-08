@@ -12,12 +12,15 @@ const file_ingest_controller_1 = require("./file-ingest.controller");
 const file_validator_service_1 = require("./services/file-validator.service");
 const text_extractor_service_1 = require("./services/text-extractor.service");
 const scoring_module_1 = require("../scoring/scoring.module");
+const ai_insight_module_1 = require("../ai-insight/ai-insight.module");
+const usage_module_1 = require("../usage/usage.module");
+const auth_module_1 = require("../auth/auth.module");
 let FileIngestModule = class FileIngestModule {
 };
 exports.FileIngestModule = FileIngestModule;
 exports.FileIngestModule = FileIngestModule = __decorate([
     (0, common_1.Module)({
-        imports: [scoring_module_1.ScoringModule],
+        imports: [scoring_module_1.ScoringModule, ai_insight_module_1.AiInsightModule, usage_module_1.UsageModule, auth_module_1.AuthModule],
         controllers: [file_ingest_controller_1.FileIngestController],
         providers: [file_validator_service_1.FileValidatorService, text_extractor_service_1.TextExtractorService],
     })

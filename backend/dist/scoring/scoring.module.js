@@ -16,7 +16,7 @@ exports.ScoringModule = ScoringModule;
 exports.ScoringModule = ScoringModule = __decorate([
     (0, common_1.Module)({
         providers: [scoring_service_1.ScoringService, resume_parser_service_1.ResumeParserService],
-        exports: [scoring_service_1.ScoringService],
+        exports: [scoring_service_1.ScoringService, resume_parser_service_1.ResumeParserService],
     })
 ], ScoringModule);
 //# sourceMappingURL=scoring.module.js.map

@@ -4,6 +4,7 @@ import { ResumeParserService } from './services/resume-parser.service';
 
 @Module({
   providers: [ScoringService, ResumeParserService],
-  exports: [ScoringService],
+  exports: [ScoringService, ResumeParserService],
 })
 export class ScoringModule {}
+

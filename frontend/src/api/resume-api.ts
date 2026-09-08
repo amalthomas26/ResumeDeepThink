@@ -2,6 +2,7 @@ import type {
   ScoreBreakdown,
   StepStartEvent,
   StepCompleteEvent,
+  UsageStatus,
 } from '../types/scoring.types';
 
 const API_BASE = 'http://localhost:3000';
@@ -22,22 +23,56 @@ export interface StreamCallbacks {
 // ─── API Functions ─────────────────────────────────────────────
 
 /**
+ * GET /resume/usage — gets current check limits and remaining count.
+ */
+export async function fetchUsageStatus(token?: string | null): Promise<UsageStatus> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE}/resume/usage`, {
+    method: 'GET',
+    headers,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch usage: ${response.status}`);
+  }
+
+  return response.json() as Promise<UsageStatus>;
+}
+
+/**
  * POST /resume/check — validates file, extracts text, returns { checkId }.
  * The checkId is then used to open an SSE stream.
  */
 export async function initiateCheck(
   file: File,
   resumeType: string,
+  token?: string | null,
+  experienceLevel?: 'experienced' | 'fresher',
 ): Promise<InitiateCheckResponse> {
   const formData = new FormData();
   formData.append('file', file);
   if (resumeType) {
     formData.append('resumeType', resumeType);
   }
+  if (experienceLevel) {
+    formData.append('experienceLevel', experienceLevel);
+  }
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const response = await fetch(`${API_BASE}/resume/check`, {
     method: 'POST',
     body: formData,
+    headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {

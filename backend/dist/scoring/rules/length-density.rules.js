@@ -23,7 +23,10 @@ function inferExperienceYears(parsedResume) {
         return null;
     return currentYear - earliestYear;
 }
-function getWordCountRange(experienceYears) {
+function getWordCountRange(experienceYears, experienceLevel) {
+    if (experienceLevel === 'fresher') {
+        return { min: 150, max: 600, level: 'fresher / entry-level' };
+    }
     if (experienceYears === null) {
         return { min: 150, max: 1400, level: 'unknown' };
     }
@@ -35,11 +38,11 @@ function getWordCountRange(experienceYears) {
     }
     return { min: 500, max: 1400, level: 'senior' };
 }
-function checkWordCountInRange(parsedResume) {
+function checkWordCountInRange(parsedResume, experienceLevel) {
     const maxPoints = 5;
     const wordCount = parsedResume.wordCount;
     const experienceYears = inferExperienceYears(parsedResume);
-    const { min, max, level } = getWordCountRange(experienceYears);
+    const { min, max, level } = getWordCountRange(experienceYears, experienceLevel);
     let points;
     let message;
     let severity;
@@ -140,9 +143,9 @@ function checkNoBlankSections(parsedResume) {
         severity,
     };
 }
-function runLengthDensityRules(parsedResume) {
+function runLengthDensityRules(parsedResume, experienceLevel) {
     return [
-        checkWordCountInRange(parsedResume),
+        checkWordCountInRange(parsedResume, experienceLevel),
         checkNoBlankSections(parsedResume),
     ];
 }

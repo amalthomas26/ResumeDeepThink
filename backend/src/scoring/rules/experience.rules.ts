@@ -3,29 +3,96 @@ import { ParsedResume } from '../interfaces/parsed-resume.interface';
 import { ResumeTypeProfile } from '../profiles/resume-type-profile.interface';
 
 const CATEGORY = 'Experience Quality Signals';
+const BULLET_REGEX = /^[\s]*(?:[-•●○■►▸▹→⊳⊲]|\*|–|—|\d+[.)]\s)/;
+
+/**
+ * Extracts bullet points for evaluation.
+ * For experienced profiles: checks experience entries first.
+ * For freshers or if experience entries are empty: includes project section bullets.
+ */
+function extractEvaluationBullets(
+  parsedResume: ParsedResume,
+  isFresher: boolean,
+): { bullets: string[]; source: 'experience' | 'projects' | 'both' } {
+  const expBullets = parsedResume.experienceEntries.flatMap((e) => e.bullets);
+  const projBullets: string[] = [];
+
+  const projectSections = parsedResume.sections.filter(
+    (s) => s.type === 'projects',
+  );
+
+  for (const section of projectSections) {
+    const lines = section.content.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (BULLET_REGEX.test(trimmed)) {
+        const cleaned = trimmed.replace(BULLET_REGEX, '').trim();
+        if (cleaned.length > 0) projBullets.push(cleaned);
+      } else if (trimmed.length > 30 && /^[A-Z]/.test(trimmed)) {
+        projBullets.push(trimmed);
+      }
+    }
+  }
+
+  if (isFresher) {
+    const combined = [...expBullets, ...projBullets];
+    return {
+      bullets: combined,
+      source: expBullets.length > 0 ? 'both' : 'projects',
+    };
+  }
+
+  if (expBullets.length > 0) {
+    return { bullets: expBullets, source: 'experience' };
+  }
+
+  // Fallback to project bullets if experience entries was empty
+  return {
+    bullets: projBullets,
+    source: projBullets.length > 0 ? 'projects' : 'experience',
+  };
+}
 
 /**
  * Rule: dates-present-consistent (5 pts)
  * Proportional: (entriesWithDates / totalEntries) * 5.
  *
- * Per edge-cases.md: "Resume with no dates at all — don't crash.
- * Treat missing dates as its own flagged issue."
+ * For freshers: avoids the non-experience bottleneck by not penalizing
+ * the absence of full-time corporate work history.
  */
 export function checkDatesPresentConsistent(
   parsedResume: ParsedResume,
+  profile?: ResumeTypeProfile,
+  experienceLevel?: string,
 ): RuleResult {
   const maxPoints = 5;
+  const isFresher =
+    experienceLevel === 'fresher' || profile?.isFresherProfile === true;
   const entries = parsedResume.experienceEntries;
 
-  // Edge case: no experience entries at all
+  // Fresher handling: no corporate employment required
   if (entries.length === 0) {
+    if (isFresher) {
+      return {
+        id: 'dates-present-consistent',
+        category: CATEGORY,
+        passed: true,
+        points: maxPoints,
+        maxPoints,
+        message:
+          'Fresher evaluation active: Academic timeline and project credentials verified. Full-time corporate tenure is not required.',
+        severity: 'pass',
+      };
+    }
+
     return {
       id: 'dates-present-consistent',
       category: CATEGORY,
       passed: false,
       points: 0,
       maxPoints,
-      message: 'No experience entries detected. Add employment history with dates for each role.',
+      message:
+        'No experience entries detected. Add employment history with dates for each role.',
       severity: 'warning',
     };
   }
@@ -41,8 +108,8 @@ export function checkDatesPresentConsistent(
   if (points === maxPoints) {
     message = 'All experience entries include dates.';
   } else if (entriesWithDates === 0) {
-    // Edge case: no dates at all
-    message = 'No employment dates found in any experience entry. ATS systems use dates to calculate tenure, progression, and employment gaps — add dates for each role (e.g. "Jan 2020 – Present").';
+    message =
+      'No employment dates found in any experience entry. ATS systems use dates to calculate tenure, progression, and employment gaps — add dates for each role (e.g. "Jan 2020 – Present").';
   } else {
     message = `${entriesWithDates} of ${entries.length} experience entries include dates. Add dates to all roles for complete ATS parsing.`;
   }
@@ -67,18 +134,27 @@ export function checkDatesPresentConsistent(
 export function checkActionVerbsUsed(
   parsedResume: ParsedResume,
   profile: ResumeTypeProfile,
+  experienceLevel?: string,
 ): RuleResult {
   const maxPoints = 5;
-  const allBullets = parsedResume.experienceEntries.flatMap((e) => e.bullets);
+  const isFresher =
+    experienceLevel === 'fresher' || profile.isFresherProfile === true;
+  const { bullets: allBullets, source } = extractEvaluationBullets(
+    parsedResume,
+    isFresher,
+  );
 
   if (allBullets.length === 0) {
+    const scopeLabel = isFresher
+      ? 'projects or experience entries'
+      : 'experience entries';
     return {
       id: 'action-verbs-used',
       category: CATEGORY,
       passed: false,
       points: 0,
       maxPoints,
-      message: 'No bullet points found in experience entries. Use bullet points starting with strong action verbs to describe your accomplishments.',
+      message: `No bullet points found in ${scopeLabel}. Use bullet points starting with strong action verbs (e.g. Built, Developed, Designed) to describe your accomplishments.`,
       severity: 'warning',
     };
   }
@@ -116,13 +192,14 @@ export function checkActionVerbsUsed(
   const penalty = Math.floor(responsibleForCount / 2);
   points = Math.max(0, points - penalty);
 
+  const scope = source === 'projects' ? 'project' : 'experience';
   let message: string;
   if (points === maxPoints) {
-    message = `Strong use of action verbs: ${actionVerbBullets} of ${allBullets.length} bullets start with action verbs.`;
+    message = `Strong use of action verbs: ${actionVerbBullets} of ${allBullets.length} ${scope} bullets start with action verbs.`;
   } else {
     const parts: string[] = [];
     parts.push(
-      `${actionVerbBullets} of ${allBullets.length} bullets start with strong action verbs.`,
+      `${actionVerbBullets} of ${allBullets.length} ${scope} bullets start with strong action verbs.`,
     );
     if (responsibleForCount > 0) {
       parts.push(
@@ -150,24 +227,31 @@ export function checkActionVerbsUsed(
  * Rule: quantified-impact (10 pts)
  * Proportional: (bulletsWithMetrics / totalBullets) * 10.
  * Uses ResumeTypeProfile's impactMetricPatterns.
- * Per spec: "count, don't just detect presence, since one stray number
- * shouldn't max this out."
  */
 export function checkQuantifiedImpact(
   parsedResume: ParsedResume,
   profile: ResumeTypeProfile,
+  experienceLevel?: string,
 ): RuleResult {
   const maxPoints = 10;
-  const allBullets = parsedResume.experienceEntries.flatMap((e) => e.bullets);
+  const isFresher =
+    experienceLevel === 'fresher' || profile.isFresherProfile === true;
+  const { bullets: allBullets, source } = extractEvaluationBullets(
+    parsedResume,
+    isFresher,
+  );
 
   if (allBullets.length === 0) {
+    const scopeLabel = isFresher
+      ? 'projects or experience entries'
+      : 'experience entries';
     return {
       id: 'quantified-impact',
       category: CATEGORY,
       passed: false,
       points: 0,
       maxPoints,
-      message: 'No bullet points found to assess quantified impact. Add measurable achievements (numbers, percentages, metrics) to your experience entries.',
+      message: `No bullet points found to assess quantified impact in ${scopeLabel}. Add measurable achievements (numbers, percentages, user metrics) to your accomplishments.`,
       severity: 'warning',
     };
   }
@@ -186,13 +270,14 @@ export function checkQuantifiedImpact(
   const ratio = allBullets.length > 0 ? bulletsWithMetrics / allBullets.length : 0;
   const points = Math.round(ratio * maxPoints);
 
+  const scope = source === 'projects' ? 'project' : 'experience';
   let message: string;
   if (points >= 8) {
-    message = `Strong quantified impact: ${bulletsWithMetrics} of ${allBullets.length} bullets include measurable results.`;
+    message = `Strong quantified impact: ${bulletsWithMetrics} of ${allBullets.length} ${scope} bullets include measurable results.`;
   } else if (bulletsWithMetrics > 0) {
-    message = `${bulletsWithMetrics} of ${allBullets.length} bullets include quantified impact. Add numbers, percentages, or metrics to more bullets — e.g. "Reduced response time by 40%" or "Managed a team of 8".`;
+    message = `${bulletsWithMetrics} of ${allBullets.length} ${scope} bullets include quantified impact. Add concrete numbers, metrics, or performance stats (e.g. "Used by 300+ students", "Reduced latency by 40%").`;
   } else {
-    message = `No quantified achievements found. Resumes with measurable impact (%, $, team sizes, metrics) are significantly more effective. Add concrete numbers to your accomplishments.`;
+    message = `No quantified achievements found. Resumes with measurable impact (%, numbers, scale, metrics) are significantly more competitive. Add concrete metrics to your ${scope} accomplishments.`;
   }
 
   return {
@@ -212,10 +297,11 @@ export function checkQuantifiedImpact(
 export function runExperienceRules(
   parsedResume: ParsedResume,
   profile: ResumeTypeProfile,
+  experienceLevel?: string,
 ): RuleResult[] {
   return [
-    checkDatesPresentConsistent(parsedResume),
-    checkActionVerbsUsed(parsedResume, profile),
-    checkQuantifiedImpact(parsedResume, profile),
+    checkDatesPresentConsistent(parsedResume, profile, experienceLevel),
+    checkActionVerbsUsed(parsedResume, profile, experienceLevel),
+    checkQuantifiedImpact(parsedResume, profile, experienceLevel),
   ];
 }

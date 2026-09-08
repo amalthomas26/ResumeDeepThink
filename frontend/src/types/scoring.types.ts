@@ -6,6 +6,27 @@
  * check-event.interface.ts definitions.
  */
 
+// ─── AI Insight Types ──────────────────────────────────────────
+
+export interface InsightBottleneck {
+  readonly category: string;
+  readonly issue: string;
+  readonly severity: 'high' | 'medium' | 'low';
+}
+
+export interface InsightFix {
+  readonly category: string;
+  readonly action: string;
+  readonly example: string;
+}
+
+export interface AiInsightResult {
+  readonly bottlenecks: InsightBottleneck[];
+  readonly fixes: InsightFix[];
+  readonly summary: string;
+  readonly source: 'ai' | 'fallback';
+}
+
 // ─── Score Breakdown Types ─────────────────────────────────────
 
 export interface RuleResult {
@@ -41,6 +62,22 @@ export interface ScoreBreakdown {
     readonly pageCount: number;
     readonly processingTimeMs: number;
   };
+  /** Experience level used for evaluation */
+  readonly experienceLevel?: 'fresher' | 'experienced';
+  /** Detected profile if different from chosen type, offered as a suggestion */
+  readonly profileSuggestion?: {
+    readonly typeId: string;
+    readonly label: string;
+    readonly reason: string;
+  } | null;
+  /** AI-generated insights. undefined = not yet loaded, null = failed/skipped. */
+  readonly aiInsights?: AiInsightResult | null;
+  /** Diagnostic warnings or anomaly notices detected during analysis */
+  readonly warnings?: string[];
+  /** Flagged if document is detected as predominantly non-English */
+  readonly isNonEnglish?: boolean;
+  /** Flagged if document appears to contain multiple merged resumes */
+  readonly isMultiResumeAnomaly?: boolean;
 }
 
 // ─── SSE Event Types ───────────────────────────────────────────
@@ -90,3 +127,29 @@ export interface CompletedStep {
   readonly label: string;
   readonly severity: 'pass' | 'warning' | 'fail';
 }
+
+// ─── Usage & Auth Types (Phase 4 & 5) ─────────────────────────
+
+export interface UsageStatus {
+  readonly allowed: boolean;
+  readonly used: number;
+  readonly limit: number;
+  readonly remaining: number;
+}
+
+export interface User {
+  readonly id: string;
+  readonly email: string;
+  readonly createdAt: string;
+}
+
+export interface CheckHistoryEntry {
+  readonly id: string;
+  readonly resumeType: string;
+  readonly overallScore: number;
+  readonly band: ScoreBand;
+  readonly bandLabel: string;
+  readonly fileName: string;
+  readonly createdAt: string;
+}
+

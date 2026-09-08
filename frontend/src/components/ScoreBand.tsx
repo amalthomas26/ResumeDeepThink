@@ -1,10 +1,30 @@
 import type { ScoreBand } from '../types/scoring.types';
 
-const BAND_STYLES: Record<ScoreBand, { bg: string; text: string }> = {
-  strong: { bg: 'bg-pine-light', text: 'text-pine' },
-  workable: { bg: 'bg-amber-light', text: 'text-ink' },
-  'at-risk': { bg: 'bg-amber-light', text: 'text-amber' },
-  'high-risk': { bg: 'bg-rust-light', text: 'text-rust' },
+const BAND_CONFIG: Record<ScoreBand, { bg: string; border: string; text: string; description: string }> = {
+  strong: {
+    bg: 'bg-status-pass-subtle',
+    border: 'border-status-pass/20',
+    text: 'text-status-pass',
+    description: 'Meets high ATS ranking thresholds with clear section boundaries and strong keyword coverage.',
+  },
+  workable: {
+    bg: 'bg-surface-subtle',
+    border: 'border-border-strong',
+    text: 'text-ink-primary',
+    description: 'Parseable by ATS engines with minor keyword or structural gaps that can be strengthened.',
+  },
+  'at-risk': {
+    bg: 'bg-status-warn-subtle',
+    border: 'border-status-warn/30',
+    text: 'text-status-warn',
+    description: 'Contains parsing obstacles or low keyword alignment that risk screening filtering.',
+  },
+  'high-risk': {
+    bg: 'bg-status-fail-subtle',
+    border: 'border-status-fail/30',
+    text: 'text-status-fail',
+    description: 'Significant formatting or structural issues preventing automated extraction.',
+  },
 };
 
 interface ScoreBandProps {
@@ -15,35 +35,38 @@ interface ScoreBandProps {
 }
 
 /**
- * The score display: large score number (IBM Plex Mono), band label,
- * and band-colored indicator.
- *
- * Per ats-scoring-engine.md: "Show the band label prominently,
- * the raw number secondarily."
+ * ScoreBandDisplay — Prominent score diagnosis with single deliberate reveal motion.
  */
 export function ScoreBandDisplay({ score, band, bandLabel, resumeType }: ScoreBandProps) {
-  const styles = BAND_STYLES[band] ?? BAND_STYLES['high-risk'];
+  const config = BAND_CONFIG[band] ?? BAND_CONFIG['high-risk'];
 
   return (
-    <div className="flex items-start gap-5 sm:gap-8">
-      {/* Score number — IBM Plex Mono, large */}
-      <div className="score-reveal flex items-baseline bg-ink rounded-xl px-5 py-3 shrink-0">
-        <span className="font-mono text-5xl font-bold text-paper leading-none">
-          {score}
-        </span>
-        <span className="font-mono text-lg text-ink-faint ml-1">/100</span>
-      </div>
+    <div className="bg-surface-panel border border-border-subtle corner-container p-6 sm:p-8 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        {/* Score Number & Scale */}
+        <div className="flex items-baseline gap-2">
+          <div className="score-reveal-moment tabular-data text-6xl sm:text-7xl font-extrabold text-ink-primary tracking-tight leading-none">
+            {score}
+          </div>
+          <span className="text-xl text-ink-faint font-semibold">/100</span>
+        </div>
 
-      {/* Band label + resume type */}
-      <div className="flex flex-col gap-2 pt-1">
-        <span
-          className={`inline-block px-3 py-1.5 rounded-md font-mono text-sm font-bold w-fit ${styles.bg} ${styles.text}`}
-        >
-          {bandLabel}
-        </span>
-        <span className="text-sm text-ink-faint font-serif">
-          Profile: <span className="font-mono font-semibold text-ink uppercase">{resumeType}</span>
-        </span>
+        {/* Diagnosis & Classification */}
+        <div className="flex-1 sm:max-w-md">
+          <div className="flex items-center gap-2.5 mb-2">
+            <span
+              className={`inline-flex items-center px-3 py-1 corner-container-sm text-xs font-bold border ${config.bg} ${config.border} ${config.text}`}
+            >
+              {bandLabel}
+            </span>
+            <span className="text-xs text-ink-secondary">
+              Profile: <strong className="text-ink-primary uppercase">{resumeType}</strong>
+            </span>
+          </div>
+          <p className="text-xs text-ink-secondary leading-relaxed">
+            {config.description}
+          </p>
+        </div>
       </div>
     </div>
   );

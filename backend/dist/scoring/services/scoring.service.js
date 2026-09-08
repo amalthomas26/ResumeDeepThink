@@ -22,6 +22,8 @@ const keywords_rules_1 = require("../rules/keywords.rules");
 const experience_rules_1 = require("../rules/experience.rules");
 const length_density_rules_1 = require("../rules/length-density.rules");
 const resume_type_detector_util_1 = require("../utils/resume-type-detector.util");
+const language_detector_util_1 = require("../utils/language-detector.util");
+const anomaly_detector_util_1 = require("../utils/anomaly-detector.util");
 const RULE_LABELS = new Map([
     ['file-is-valid-document', 'Validating document format'],
     ['text-layer-extractable', 'Checking text layer'],
@@ -47,7 +49,7 @@ let ScoringService = class ScoringService {
     constructor(resumeParser) {
         this.resumeParser = resumeParser;
     }
-    score(extractionResult, resumeTypeHint) {
+    score(extractionResult, resumeTypeHint, experienceLevel) {
         const startTime = Date.now();
         const checkId = (0, crypto_1.randomUUID)();
         if (extractionResult.isImageOnly) {
@@ -57,18 +59,41 @@ let ScoringService = class ScoringService {
         const detectedType = (0, resume_type_detector_util_1.detectResumeType)(parsedResume);
         const effectiveType = resumeTypeHint || detectedType;
         const profile = (0, profiles_1.getResumeTypeProfile)(effectiveType);
+        const effectiveExpLevel = effectiveType === 'fresher' || profile.isFresherProfile
+            ? 'fresher'
+            : experienceLevel || 'experienced';
         const allRuleResults = [
             ...(0, file_format_rules_1.runFileFormatRules)(extractionResult),
             ...(0, contact_rules_1.runContactRules)(parsedResume),
-            ...(0, structure_rules_1.runStructureRules)(parsedResume, profile),
+            ...(0, structure_rules_1.runStructureRules)(parsedResume, profile, effectiveExpLevel),
             ...(0, keywords_rules_1.runKeywordRules)(parsedResume, profile),
-            ...(0, experience_rules_1.runExperienceRules)(parsedResume, profile),
-            ...(0, length_density_rules_1.runLengthDensityRules)(parsedResume),
+            ...(0, experience_rules_1.runExperienceRules)(parsedResume, profile, effectiveExpLevel),
+            ...(0, length_density_rules_1.runLengthDensityRules)(parsedResume, effectiveExpLevel),
         ];
         const categories = this.groupByCategory(allRuleResults);
         const overallScore = allRuleResults.reduce((sum, r) => sum + r.points, 0);
         const { band, label: bandLabel } = (0, score_band_util_1.getScoreBand)(Math.min(100, Math.max(0, overallScore)));
         const processingTimeMs = Date.now() - startTime;
+        let profileSuggestion = null;
+        if (resumeTypeHint &&
+            resumeTypeHint !== detectedType &&
+            detectedType !== 'general') {
+            const suggestedProfile = (0, profiles_1.getResumeTypeProfile)(detectedType);
+            profileSuggestion = {
+                typeId: suggestedProfile.id,
+                label: suggestedProfile.label,
+                reason: `Our keyword scan identified strong alignment with ${suggestedProfile.label}.`,
+            };
+        }
+        const languageCheck = (0, language_detector_util_1.detectLanguage)(extractionResult.text);
+        const anomalyCheck = (0, anomaly_detector_util_1.detectMultiResumeAnomaly)(parsedResume);
+        const warnings = [];
+        if (!languageCheck.isEnglish && languageCheck.warningMessage) {
+            warnings.push(languageCheck.warningMessage);
+        }
+        if (anomalyCheck.isMultiResume && anomalyCheck.reason) {
+            warnings.push(anomalyCheck.reason);
+        }
         return {
             checkId,
             overallScore: Math.min(100, Math.max(0, overallScore)),
@@ -76,6 +101,11 @@ let ScoringService = class ScoringService {
             band,
             bandLabel,
             resumeType: profile.id,
+            experienceLevel: effectiveExpLevel,
+            profileSuggestion,
+            warnings: warnings.length > 0 ? warnings : undefined,
+            isNonEnglish: !languageCheck.isEnglish,
+            isMultiResumeAnomaly: anomalyCheck.isMultiResume,
             categories,
             ruleResults: allRuleResults,
             meta: {
@@ -85,7 +115,7 @@ let ScoringService = class ScoringService {
             },
         };
     }
-    scoreWithProgress(extractionResult, resumeTypeHint, onProgress) {
+    scoreWithProgress(extractionResult, resumeTypeHint, onProgress, experienceLevel) {
         const startTime = Date.now();
         const checkId = (0, crypto_1.randomUUID)();
         if (extractionResult.isImageOnly) {
@@ -95,6 +125,9 @@ let ScoringService = class ScoringService {
         const detectedType = (0, resume_type_detector_util_1.detectResumeType)(parsedResume);
         const effectiveType = resumeTypeHint || detectedType;
         const profile = (0, profiles_1.getResumeTypeProfile)(effectiveType);
+        const effectiveExpLevel = effectiveType === 'fresher' || profile.isFresherProfile
+            ? 'fresher'
+            : experienceLevel || 'experienced';
         const categoryRunners = [
             {
                 categoryLabel: 'File & Format Integrity',
@@ -106,7 +139,7 @@ let ScoringService = class ScoringService {
             },
             {
                 categoryLabel: 'Structural Parsing',
-                run: () => (0, structure_rules_1.runStructureRules)(parsedResume, profile),
+                run: () => (0, structure_rules_1.runStructureRules)(parsedResume, profile, effectiveExpLevel),
             },
             {
                 categoryLabel: 'Keyword & Skills Alignment',
@@ -114,11 +147,11 @@ let ScoringService = class ScoringService {
             },
             {
                 categoryLabel: 'Experience Quality Signals',
-                run: () => (0, experience_rules_1.runExperienceRules)(parsedResume, profile),
+                run: () => (0, experience_rules_1.runExperienceRules)(parsedResume, profile, effectiveExpLevel),
             },
             {
                 categoryLabel: 'Length & Density',
-                run: () => (0, length_density_rules_1.runLengthDensityRules)(parsedResume),
+                run: () => (0, length_density_rules_1.runLengthDensityRules)(parsedResume, effectiveExpLevel),
             },
         ];
         const allRuleResults = [];
@@ -149,6 +182,26 @@ let ScoringService = class ScoringService {
         const overallScore = allRuleResults.reduce((sum, r) => sum + r.points, 0);
         const { band, label: bandLabel } = (0, score_band_util_1.getScoreBand)(Math.min(100, Math.max(0, overallScore)));
         const processingTimeMs = Date.now() - startTime;
+        let profileSuggestion = null;
+        if (resumeTypeHint &&
+            resumeTypeHint !== detectedType &&
+            detectedType !== 'general') {
+            const suggestedProfile = (0, profiles_1.getResumeTypeProfile)(detectedType);
+            profileSuggestion = {
+                typeId: suggestedProfile.id,
+                label: suggestedProfile.label,
+                reason: `Our keyword scan identified strong alignment with ${suggestedProfile.label}.`,
+            };
+        }
+        const languageCheck = (0, language_detector_util_1.detectLanguage)(extractionResult.text);
+        const anomalyCheck = (0, anomaly_detector_util_1.detectMultiResumeAnomaly)(parsedResume);
+        const warnings = [];
+        if (!languageCheck.isEnglish && languageCheck.warningMessage) {
+            warnings.push(languageCheck.warningMessage);
+        }
+        if (anomalyCheck.isMultiResume && anomalyCheck.reason) {
+            warnings.push(anomalyCheck.reason);
+        }
         return {
             checkId,
             overallScore: Math.min(100, Math.max(0, overallScore)),
@@ -156,6 +209,11 @@ let ScoringService = class ScoringService {
             band,
             bandLabel,
             resumeType: profile.id,
+            experienceLevel: effectiveExpLevel,
+            profileSuggestion,
+            warnings: warnings.length > 0 ? warnings : undefined,
+            isNonEnglish: !languageCheck.isEnglish,
+            isMultiResumeAnomaly: anomalyCheck.isMultiResume,
             categories,
             ruleResults: allRuleResults,
             meta: {
@@ -188,6 +246,11 @@ let ScoringService = class ScoringService {
             band: 'high-risk',
             bandLabel: 'Unable to score — scanned/image-only document',
             resumeType: 'general',
+            warnings: [
+                'No extractable text found — this appears to be a scanned image. ATS systems cannot read image-only PDFs. Try exporting your resume as a text-based PDF.',
+            ],
+            isNonEnglish: false,
+            isMultiResumeAnomaly: false,
             categories: [
                 {
                     name: 'File & Format Integrity',

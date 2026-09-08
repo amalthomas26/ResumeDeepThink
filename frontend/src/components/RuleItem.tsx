@@ -1,9 +1,9 @@
 import type { RuleResult } from '../types/scoring.types';
 
-const SEVERITY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  pass: { bg: 'bg-pine-light', text: 'text-pine', border: 'border-l-pine' },
-  warning: { bg: 'bg-amber-light', text: 'text-amber', border: 'border-l-amber' },
-  fail: { bg: 'bg-rust-light', text: 'text-rust', border: 'border-l-rust' },
+const SEVERITY_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  pass: { label: 'Pass', bg: 'bg-status-pass-subtle', text: 'text-status-pass', border: 'border-l-status-pass' },
+  warning: { label: 'Flag', bg: 'bg-status-warn-subtle', text: 'text-status-warn', border: 'border-l-status-warn' },
+  fail: { label: 'Fail', bg: 'bg-status-fail-subtle', text: 'text-status-fail', border: 'border-l-status-fail' },
 };
 
 interface RuleItemProps {
@@ -11,32 +11,29 @@ interface RuleItemProps {
 }
 
 /**
- * A single rule result in the diagnostic report.
- * Shows severity tag (PASS/FLAG in Plex Mono), points, and message.
- * Uses Pine/Rust color coding per design tokens.
+ * A single rule evaluation entry in the diagnostic breakdown.
  */
 export function RuleItem({ rule }: RuleItemProps) {
-  const colors = SEVERITY_COLORS[rule.severity] ?? SEVERITY_COLORS.fail;
-  const tagLabel = rule.severity === 'pass' ? 'PASS' : rule.severity === 'warning' ? 'FLAG' : 'FAIL';
+  const config = SEVERITY_CONFIG[rule.severity] ?? SEVERITY_CONFIG.fail;
 
   return (
-    <div className={`py-3 border-l-2 pl-4 ${colors.border}`}>
-      <div className="flex items-center gap-3 flex-wrap">
-        {/* Severity tag */}
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-[11px] font-mono font-bold tracking-wider ${colors.bg} ${colors.text}`}
-        >
-          {tagLabel}
-        </span>
+    <div className={`py-3.5 border-l-3 pl-4 ${config.border} border-b border-border-subtle/50 last:border-b-0`}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${config.bg} ${config.text}`}>
+            {config.label}
+          </span>
+          <span className="text-xs font-semibold text-ink-primary">
+            {rule.category}
+          </span>
+        </div>
 
-        {/* Points */}
-        <span className="font-mono text-sm font-semibold text-ink">
-          {rule.points}/{rule.maxPoints}
+        <span className="tabular-data text-xs font-bold text-ink-primary bg-surface-subtle px-2 py-0.5 rounded">
+          {rule.points} / {rule.maxPoints} pts
         </span>
       </div>
 
-      {/* Message */}
-      <p className="mt-1.5 text-sm text-ink-muted leading-relaxed font-serif">
+      <p className="mt-1.5 text-xs text-ink-secondary leading-relaxed">
         {rule.message}
       </p>
     </div>

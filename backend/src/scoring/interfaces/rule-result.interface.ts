@@ -1,3 +1,5 @@
+import { AiInsightResult } from '../../ai-insight/interfaces/ai-insight.interface';
+
 /**
  * Result of a single scoring rule execution.
  * Each rule returns partial credit where appropriate — not just pass/fail.
@@ -55,4 +57,21 @@ export interface ScoreBreakdown {
     readonly pageCount: number;
     readonly processingTimeMs: number;
   };
+  /** Experience level used for evaluation */
+  readonly experienceLevel?: 'fresher' | 'experienced';
+  /** Detected profile if different from chosen type, offered as a suggestion */
+  readonly profileSuggestion?: {
+    readonly typeId: string;
+    readonly label: string;
+    readonly reason: string;
+  } | null;
+  /** AI-generated insights. undefined = not yet loaded, null = failed/skipped. */
+  readonly aiInsights?: AiInsightResult | null;
+  /** Diagnostic warnings or anomaly notices detected during analysis */
+  readonly warnings?: string[];
+  /** Flagged if document is detected as predominantly non-English */
+  readonly isNonEnglish?: boolean;
+  /** Flagged if document appears to contain multiple merged resumes */
+  readonly isMultiResumeAnomaly?: boolean;
 }
+

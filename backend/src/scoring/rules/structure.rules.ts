@@ -12,14 +12,23 @@ const CATEGORY = 'Structural Parsing';
 export function checkStandardSectionsDetected(
   parsedResume: ParsedResume,
   profile: ResumeTypeProfile,
+  experienceLevel?: string,
 ): RuleResult {
   const maxPoints = 10;
-  const expectedSections = profile.expectedSections;
+  const isFresher =
+    experienceLevel === 'fresher' || profile.isFresherProfile === true;
+
+  let expectedSections = [...profile.expectedSections];
   const foundSectionTypes = new Set(
     parsedResume.sections
       .filter((s) => s.confidence >= 0.5) // Only count confident matches
       .map((s) => s.type),
   );
+
+  // For freshers: if experience is missing but projects is present, projects satisfies it
+  if (isFresher && expectedSections.includes('experience') && !foundSectionTypes.has('experience')) {
+    expectedSections = expectedSections.map((s) => (s === 'experience' ? 'projects' : s));
+  }
 
   const matchedCount = expectedSections.filter((expected) =>
     foundSectionTypes.has(expected as SectionType),
@@ -40,7 +49,7 @@ export function checkStandardSectionsDetected(
   } else if (matchedCount > 0) {
     message = `Found ${matchedCount} of ${expectedSections.length} expected sections. Missing: ${missingSections.join(', ')}. ATS systems look for standard section headers to categorize your content.`;
   } else {
-    message = `Could not identify any standard section headers. ATS systems rely on headers like "Experience", "Education", "Skills" to parse your resume correctly.`;
+    message = `Could not identify any standard section headers. ATS systems rely on headers like "Experience", "Education", "Skills", "Projects" to parse your resume correctly.`;
   }
 
   return {
@@ -188,9 +197,10 @@ export function checkNoTablesOrTextboxes(parsedResume: ParsedResume): RuleResult
 export function runStructureRules(
   parsedResume: ParsedResume,
   profile: ResumeTypeProfile,
+  experienceLevel?: string,
 ): RuleResult[] {
   return [
-    checkStandardSectionsDetected(parsedResume, profile),
+    checkStandardSectionsDetected(parsedResume, profile, experienceLevel),
     checkNoMultiColumnLayout(parsedResume),
     checkNoTablesOrTextboxes(parsedResume),
   ];

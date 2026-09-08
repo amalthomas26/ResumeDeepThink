@@ -6,8 +6,8 @@ export type RuleProgressCallback = (event: StepStartEvent | StepCompleteEvent) =
 export declare class ScoringService {
     private readonly resumeParser;
     constructor(resumeParser: ResumeParserService);
-    score(extractionResult: ExtractionResult, resumeTypeHint?: string): ScoreBreakdown;
-    scoreWithProgress(extractionResult: ExtractionResult, resumeTypeHint: string | undefined, onProgress: RuleProgressCallback): ScoreBreakdown;
+    score(extractionResult: ExtractionResult, resumeTypeHint?: string, experienceLevel?: 'fresher' | 'experienced'): ScoreBreakdown;
+    scoreWithProgress(extractionResult: ExtractionResult, resumeTypeHint: string | undefined, onProgress: RuleProgressCallback, experienceLevel?: 'fresher' | 'experienced'): ScoreBreakdown;
     private groupByCategory;
     private buildImageOnlyResult;
 }

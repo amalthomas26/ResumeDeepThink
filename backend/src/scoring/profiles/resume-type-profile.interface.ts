@@ -6,10 +6,20 @@
  */
 export interface ResumeTypeProfile {
   /** Unique identifier for this resume type */
-  readonly id: 'tech' | 'finance' | 'support' | 'general';
+  readonly id:
+    | 'tech'
+    | 'finance'
+    | 'support'
+    | 'general'
+    | 'fresher'
+    | 'marketing'
+    | 'creative';
 
   /** Human-readable label shown in the UI */
   readonly label: string;
+
+  /** Flag if this profile is tailored for entry-level / freshers */
+  readonly isFresherProfile?: boolean;
 
   /**
    * Weighted keyword bank for hard/technical skills.

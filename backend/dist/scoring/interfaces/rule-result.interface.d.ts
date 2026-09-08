@@ -1,3 +1,4 @@
+import { AiInsightResult } from '../../ai-insight/interfaces/ai-insight.interface';
 export interface RuleResult {
     readonly id: string;
     readonly category: string;
@@ -28,4 +29,14 @@ export interface ScoreBreakdown {
         readonly pageCount: number;
         readonly processingTimeMs: number;
     };
+    readonly experienceLevel?: 'fresher' | 'experienced';
+    readonly profileSuggestion?: {
+        readonly typeId: string;
+        readonly label: string;
+        readonly reason: string;
+    } | null;
+    readonly aiInsights?: AiInsightResult | null;
+    readonly warnings?: string[];
+    readonly isNonEnglish?: boolean;
+    readonly isMultiResumeAnomaly?: boolean;
 }

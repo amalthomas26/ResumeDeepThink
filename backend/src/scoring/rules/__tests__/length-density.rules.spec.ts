@@ -66,6 +66,19 @@ describe('Length & Density Rules (10 pts)', () => {
       );
       expect(result.points).toBe(5);
     });
+
+    it('should accept concise word count (250-500 words) for fresher experienceLevel', () => {
+      const result = checkWordCountInRange(
+        makeResume({
+          wordCount: 250,
+          experienceEntries: [seniorEntry], // even if dates imply older
+        }),
+        'fresher',
+      );
+      expect(result.points).toBe(5);
+      expect(result.passed).toBe(true);
+      expect(result.message).toContain('fresher / entry-level');
+    });
   });
 
   describe('checkNoBlankSections (5 pts)', () => {

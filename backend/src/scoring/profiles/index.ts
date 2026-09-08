@@ -3,6 +3,9 @@ import { techProfile } from './tech.profile';
 import { financeProfile } from './finance.profile';
 import { supportProfile } from './support.profile';
 import { generalProfile } from './general.profile';
+import { fresherProfile } from './fresher.profile';
+import { marketingProfile } from './marketing.profile';
+import { creativeProfile } from './creative.profile';
 
 /**
  * Registry of all resume type profiles, keyed by profile ID.
@@ -14,6 +17,9 @@ export const RESUME_TYPE_PROFILES: ReadonlyMap<string, ResumeTypeProfile> =
     [financeProfile.id, financeProfile],
     [supportProfile.id, supportProfile],
     [generalProfile.id, generalProfile],
+    [fresherProfile.id, fresherProfile],
+    [marketingProfile.id, marketingProfile],
+    [creativeProfile.id, creativeProfile],
   ]);
 
 /**
@@ -26,5 +32,14 @@ export function getResumeTypeProfile(typeId: string | undefined): ResumeTypeProf
   return generalProfile;
 }
 
-export { techProfile, financeProfile, supportProfile, generalProfile };
+export {
+  techProfile,
+  financeProfile,
+  supportProfile,
+  generalProfile,
+  fresherProfile,
+  marketingProfile,
+  creativeProfile,
+};
 export type { ResumeTypeProfile } from './resume-type-profile.interface';
+

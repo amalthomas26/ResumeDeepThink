@@ -126,16 +126,58 @@ describe('ScoringService', () => {
     });
   });
 
-  describe('score bands', () => {
-    it('should assign correct band for high score', () => {
-      const text = loadFixture(FIXTURES.CLEAN);
-      const result = scoringService.score(makeExtraction(text), 'tech');
+  describe('edge case diagnostics (language and anomaly detection)', () => {
+    it('should flag non-English resume and provide diagnostic warning', () => {
+      const hindiText = `
+        राजेश शर्मा
+        सॉफ्टवेयर इंजीनियर
+        rajesh@example.com | नई दिल्ली
+        
+        व्यावसायिक सारांश:
+        क्लाउड सेवाओं और आधुनिक वेब अनुप्रयोगों के विकास में ६ वर्षों का अनुभव।
+        
+        अनुभव:
+        वरिष्ठ डेवलपर - इंफोटेक सॉल्यूशंस (२०२० - वर्तमान)
+        - डेटाबेस प्रबंधन और माइक्रोसर्विसेज आर्किटेक्चर का निर्माण किया।
+        - सिस्टम थ्रूपुट में ४०% सुधार हासिल किया।
+        
+        शिक्षा:
+        बी.टेक कंप्यूटर साइंस
+      `;
 
-      if (result.overallScore >= 85) {
-        expect(result.band).toBe('strong');
-      } else if (result.overallScore >= 65) {
-        expect(result.band).toBe('workable');
-      }
+      const result = scoringService.score(makeExtraction(hindiText));
+      expect(result.isNonEnglish).toBe(true);
+      expect(result.warnings).toBeDefined();
+      expect(result.warnings!.some((w) => w.includes('calibrated for English-language resumes'))).toBe(true);
+    });
+
+    it('should flag multi-resume pasted anomaly and provide guidance warning', () => {
+      const duplicateContent = 'Developed enterprise microservices and deployed Kubernetes clusters across regions. '.repeat(100);
+      const multiResumeText = `
+        First Candidate
+        candidate1@example.com
+        Experience
+        ${duplicateContent}
+        
+        Second Candidate
+        candidate2@example.com
+        Experience
+        ${duplicateContent}
+      `;
+
+      const extraction = makeExtraction(multiResumeText, { pageCount: 4 });
+      const result = scoringService.score(extraction);
+      expect(result.isMultiResumeAnomaly).toBe(true);
+      expect(result.warnings).toBeDefined();
+      expect(result.warnings!.some((w) => w.includes('multi-resume merge'))).toBe(true);
+    });
+
+    it('should include warning for image-only PDF', () => {
+      const result = scoringService.score(
+        makeExtraction('', { isImageOnly: true, pageCount: 2 }),
+      );
+      expect(result.warnings).toBeDefined();
+      expect(result.warnings![0]).toContain('scanned image');
     });
   });
 });

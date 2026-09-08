@@ -34,11 +34,17 @@ function inferExperienceYears(parsedResume: ParsedResume): number | null {
  * Per spec: "a 1-page resume for 12 years of experience or a 3-page resume
  * for a fresher are both flagged, in opposite directions."
  */
-function getWordCountRange(experienceYears: number | null): {
+function getWordCountRange(
+  experienceYears: number | null,
+  experienceLevel?: string,
+): {
   min: number;
   max: number;
   level: string;
 } {
+  if (experienceLevel === 'fresher') {
+    return { min: 150, max: 600, level: 'fresher / entry-level' };
+  }
   if (experienceYears === null) {
     // Can't infer — use the broadest reasonable range
     return { min: 150, max: 1400, level: 'unknown' };
@@ -58,11 +64,14 @@ function getWordCountRange(experienceYears: number | null): {
  * Checks word count against experience-level-appropriate bounds.
  * Per edge-cases.md: distinguish "sparse fresher resume" from "bad resume."
  */
-export function checkWordCountInRange(parsedResume: ParsedResume): RuleResult {
+export function checkWordCountInRange(
+  parsedResume: ParsedResume,
+  experienceLevel?: string,
+): RuleResult {
   const maxPoints = 5;
   const wordCount = parsedResume.wordCount;
   const experienceYears = inferExperienceYears(parsedResume);
-  const { min, max, level } = getWordCountRange(experienceYears);
+  const { min, max, level } = getWordCountRange(experienceYears, experienceLevel);
 
   let points: number;
   let message: string;
@@ -184,9 +193,12 @@ export function checkNoBlankSections(parsedResume: ParsedResume): RuleResult {
 /**
  * Runs all Length & Density rules (10 pts total).
  */
-export function runLengthDensityRules(parsedResume: ParsedResume): RuleResult[] {
+export function runLengthDensityRules(
+  parsedResume: ParsedResume,
+  experienceLevel?: string,
+): RuleResult[] {
   return [
-    checkWordCountInRange(parsedResume),
+    checkWordCountInRange(parsedResume, experienceLevel),
     checkNoBlankSections(parsedResume),
   ];
 }

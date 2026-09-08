@@ -1,6 +1,7 @@
 export interface ResumeTypeProfile {
-    readonly id: 'tech' | 'finance' | 'support' | 'general';
+    readonly id: 'tech' | 'finance' | 'support' | 'general' | 'fresher' | 'marketing' | 'creative';
     readonly label: string;
+    readonly isFresherProfile?: boolean;
     readonly hardSkillKeywords: string[];
     readonly softSkillKeywords: string[];
     readonly expectedSections: string[];

@@ -5,12 +5,16 @@ exports.checkNoMultiColumnLayout = checkNoMultiColumnLayout;
 exports.checkNoTablesOrTextboxes = checkNoTablesOrTextboxes;
 exports.runStructureRules = runStructureRules;
 const CATEGORY = 'Structural Parsing';
-function checkStandardSectionsDetected(parsedResume, profile) {
+function checkStandardSectionsDetected(parsedResume, profile, experienceLevel) {
     const maxPoints = 10;
-    const expectedSections = profile.expectedSections;
+    const isFresher = experienceLevel === 'fresher' || profile.isFresherProfile === true;
+    let expectedSections = [...profile.expectedSections];
     const foundSectionTypes = new Set(parsedResume.sections
         .filter((s) => s.confidence >= 0.5)
         .map((s) => s.type));
+    if (isFresher && expectedSections.includes('experience') && !foundSectionTypes.has('experience')) {
+        expectedSections = expectedSections.map((s) => (s === 'experience' ? 'projects' : s));
+    }
     const matchedCount = expectedSections.filter((expected) => foundSectionTypes.has(expected)).length;
     const ratio = expectedSections.length > 0
         ? matchedCount / expectedSections.length
@@ -25,7 +29,7 @@ function checkStandardSectionsDetected(parsedResume, profile) {
         message = `Found ${matchedCount} of ${expectedSections.length} expected sections. Missing: ${missingSections.join(', ')}. ATS systems look for standard section headers to categorize your content.`;
     }
     else {
-        message = `Could not identify any standard section headers. ATS systems rely on headers like "Experience", "Education", "Skills" to parse your resume correctly.`;
+        message = `Could not identify any standard section headers. ATS systems rely on headers like "Experience", "Education", "Skills", "Projects" to parse your resume correctly.`;
     }
     return {
         id: 'standard-sections-detected',
@@ -122,9 +126,9 @@ function checkNoTablesOrTextboxes(parsedResume) {
         severity: hasTables ? 'fail' : 'pass',
     };
 }
-function runStructureRules(parsedResume, profile) {
+function runStructureRules(parsedResume, profile, experienceLevel) {
     return [
-        checkStandardSectionsDetected(parsedResume, profile),
+        checkStandardSectionsDetected(parsedResume, profile, experienceLevel),
         checkNoMultiColumnLayout(parsedResume),
         checkNoTablesOrTextboxes(parsedResume),
     ];
